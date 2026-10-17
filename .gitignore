@@ -52,3 +52,6 @@ videos/
 # Local-only test credentials (never commit)
 *.local.json
 login-data.local.json
+
+# Allure CLI distribution downloaded by allure-maven
+.allure/
