@@ -19,15 +19,16 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <!-- Dependency versions -->
-        <selenium.version>4.27.0</selenium.version>
-        <testng.version>7.10.2</testng.version>
-        <webdrivermanager.version>5.9.2</webdrivermanager.version>
-        <allure.version>2.29.0</allure.version>
+        <selenium.version>4.51.0</selenium.version>
+        <testng.version>7.12.0</testng.version>
+        <allure.version>2.35.5</allure.version>
+        <!-- allure-commandline is versioned independently of allure-testng -->
+        <allure.commandline.version>2.46.1</allure.commandline.version>
         <extentreports.version>5.1.2</extentreports.version>
         <monte.version>0.7.7.0</monte.version>
-        <jackson.version>2.18.2</jackson.version>
+        <jackson.version>2.18.11</jackson.version>
         <opencsv.version>5.9</opencsv.version>
-        <log4j.version>2.24.3</log4j.version>
+        <log4j.version>2.25.5</log4j.version>
         <aspectj.version>1.9.22.1</aspectj.version>
 
         <!-- Plugin versions -->
@@ -52,13 +53,6 @@
             <groupId>org.testng</groupId>
             <artifactId>testng</artifactId>
             <version>${testng.version}</version>
-        </dependency>
-
-        <!-- WebDriverManager (optional fallback for driver management) -->
-        <dependency>
-            <groupId>io.github.bonigarcia</groupId>
-            <artifactId>webdrivermanager</artifactId>
-            <version>${webdrivermanager.version}</version>
         </dependency>
 
         <!-- Allure TestNG -->
@@ -163,7 +157,7 @@
                 <artifactId>allure-maven</artifactId>
                 <version>${allure.maven.version}</version>
                 <configuration>
-                    <reportVersion>${allure.version}</reportVersion>
+                    <reportVersion>${allure.commandline.version}</reportVersion>
                     <resultsDirectory>${project.build.directory}/allure-results</resultsDirectory>
                     <reportDirectory>${project.build.directory}/allure-report</reportDirectory>
                 </configuration>

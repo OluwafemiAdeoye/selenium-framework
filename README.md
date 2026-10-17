@@ -4,8 +4,8 @@ A Page Object Model test automation framework built on Selenium 4 and TestNG, wi
 configuration, thread-safe parallel execution, dual reporting, and local or cloud-grid execution.
 
 ![Java](https://img.shields.io/badge/Java-21-orange)
-![Selenium](https://img.shields.io/badge/Selenium-4.27.0-green)
-![TestNG](https://img.shields.io/badge/TestNG-7.10.2-blue)
+![Selenium](https://img.shields.io/badge/Selenium-4.51.0-green)
+![TestNG](https://img.shields.io/badge/TestNG-7.12.0-blue)
 ![Maven](https://img.shields.io/badge/build-Maven-red)
 
 ## Features
