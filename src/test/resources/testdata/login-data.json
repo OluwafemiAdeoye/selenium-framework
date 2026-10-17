@@ -1,0 +1,141 @@
+{
+  "validUser": {
+    "username": "${TEST_USER_EMAIL}",
+    "password": "${TEST_USER_PASSWORD}",
+    "otp": "${TEST_USER_OTP}",
+    "expectedOutcome": "success",
+    "description": "Valid user with correct credentials - should login successfully. Real values are NOT committed: supply them via login-data.local.json (gitignored) or the matching environment variables."
+  },
+  "invalidPasswordUser": {
+    "username": "tomsmith",
+    "password": "WrongPassword123!",
+    "expectedOutcome": "failure",
+    "description": "Existing user with wrong password - should show error message"
+  },
+  "nonExistentUser": {
+    "username": "nonexistent_user",
+    "password": "SomePassword123!",
+    "expectedOutcome": "failure",
+    "description": "User that does not exist in the system - should show error message"
+  },
+  "emptyUsername": {
+    "username": "",
+    "password": "ValidPassword123!",
+    "expectedOutcome": "failure",
+    "description": "Empty username field - should show error or prevent login"
+  },
+  "emptyPassword": {
+    "username": "tomsmith",
+    "password": "",
+    "expectedOutcome": "failure",
+    "description": "Empty password field - should show error or prevent login"
+  },
+  "emptyBothFields": {
+    "username": "",
+    "password": "",
+    "expectedOutcome": "failure",
+    "description": "Both fields empty - login should fail"
+  },
+  "specialCharactersUsername": {
+    "username": "test+special@user",
+    "password": "ValidPassword123!",
+    "expectedOutcome": "failure",
+    "description": "Username with special characters - test input handling"
+  },
+  "longUsername": {
+    "username": "verylongusernamethatmightbeattheedgeofacceptablelimitsfortheapplication",
+    "password": "ValidPassword123!",
+    "expectedOutcome": "failure",
+    "description": "Very long username - test edge case handling"
+  },
+  "shortPassword": {
+    "username": "tomsmith",
+    "password": "123",
+    "expectedOutcome": "failure",
+    "description": "Password too short - may trigger validation if minimum length is enforced"
+  },
+  "spacesInUsername": {
+    "username": "tom smith",
+    "password": "SuperSecretPassword!",
+    "expectedOutcome": "failure",
+    "description": "Username with spaces - should show error"
+  },
+  "leadingSpacesUsername": {
+    "username": "  tomsmith",
+    "password": "SuperSecretPassword!",
+    "expectedOutcome": "failure",
+    "description": "Username with leading spaces - test trimming behavior"
+  },
+  "trailingSpacesUsername": {
+    "username": "tomsmith  ",
+    "password": "SuperSecretPassword!",
+    "expectedOutcome": "failure",
+    "description": "Username with trailing spaces - test trimming behavior"
+  },
+  "leadingSpacesPassword": {
+    "username": "tomsmith",
+    "password": "  SuperSecretPassword!",
+    "expectedOutcome": "failure",
+    "description": "Password with leading spaces - test trimming behavior"
+  },
+  "trailingSpacesPassword": {
+    "username": "tomsmith",
+    "password": "SuperSecretPassword!  ",
+    "expectedOutcome": "failure",
+    "description": "Password with trailing spaces - test trimming behavior"
+  },
+  "uppercaseUsername": {
+    "username": "TOMSMITH",
+    "password": "SuperSecretPassword!",
+    "expectedOutcome": "failure",
+    "description": "Username in uppercase - test case sensitivity"
+  },
+  "mixedCaseUsername": {
+    "username": "ToMsMiTh",
+    "password": "SuperSecretPassword!",
+    "expectedOutcome": "failure",
+    "description": "Username in mixed case - test case sensitivity"
+  },
+  "sqlInjectionUsername": {
+    "username": "admin'--",
+    "password": "password",
+    "expectedOutcome": "failure",
+    "description": "SQL injection attempt in username - security test"
+  },
+  "xssUsername": {
+    "username": "<script>alert('xss')</script>",
+    "password": "ValidPassword123!",
+    "expectedOutcome": "failure",
+    "description": "XSS attempt in username - security test"
+  },
+  "sqlInjectionPassword": {
+    "username": "tomsmith",
+    "password": "' OR '1'='1",
+    "expectedOutcome": "failure",
+    "description": "SQL injection attempt in password - security test"
+  },
+  "specialCharactersPassword": {
+    "username": "tomsmith",
+    "password": "P@$$w0rd!@#$%^&*()",
+    "expectedOutcome": "failure",
+    "description": "Password with multiple special characters - test password complexity handling"
+  },
+  "numericOnlyPassword": {
+    "username": "tomsmith",
+    "password": "123456789",
+    "expectedOutcome": "failure",
+    "description": "Numeric-only password - may fail password complexity rules"
+  },
+  "unicodeUsername": {
+    "username": "tëstüser",
+    "password": "ValidPassword123!",
+    "expectedOutcome": "failure",
+    "description": "Username with unicode characters - test internationalization"
+  },
+  "unicodePassword": {
+    "username": "tomsmith",
+    "password": "Pässwörd123!",
+    "expectedOutcome": "failure",
+    "description": "Password with unicode characters - test internationalization"
+  }
+}

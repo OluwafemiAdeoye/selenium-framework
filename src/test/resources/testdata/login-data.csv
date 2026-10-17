@@ -1,0 +1,22 @@
+username,password,expectedOutcome,description
+tomsmith,SuperSecretPassword!,success,Valid user with correct credentials
+tomsmith,WrongPassword123!,failure,Existing user with wrong password
+nonexistent_user,SomePassword123!,failure,User that does not exist in the system
+,ValidPassword123!,failure,Empty username field
+tomsmith,,failure,Empty password field
+,,failure,Both fields empty
+test+special@user,ValidPassword123!,failure,Username with special characters
+verylongusernamethatmightbeattheedgeofacceptablelimitsfortheapplication,ValidPassword123!,failure,Very long username
+tomsmith,123,failure,Password too short
+tom smith,SuperSecretPassword!,failure,Username with spaces
+"  tomsmith",SuperSecretPassword!,failure,Username with leading spaces
+"tomsmith  ",SuperSecretPassword!,failure,Username with trailing spaces
+tomsmith,"  SuperSecretPassword!",failure,Password with leading spaces
+tomsmith,"SuperSecretPassword!  ",failure,Password with trailing spaces
+TOMSMITH,SuperSecretPassword!,failure,Username in uppercase
+ToMsMiTh,SuperSecretPassword!,failure,Username in mixed case
+"admin'--",password,failure,SQL injection attempt in username
+"<script>alert('xss')</script>",ValidPassword123!,failure,XSS attempt in username
+tomsmith,"' OR '1'='1",failure,SQL injection attempt in password
+tomsmith,"P@$$w0rd!@#$%^&*()",failure,Password with multiple special characters
+tomsmith,123456789,failure,Numeric-only password

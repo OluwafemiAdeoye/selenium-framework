@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<suite name="Regression Suite" verbose="1">
+
+    <listeners>
+        <listener class-name="com.framework.selenium.listeners.ParallelConfigListener"/>
+        <listener class-name="com.framework.selenium.listeners.TestListener"/>
+        <listener class-name="com.framework.selenium.listeners.RetryTransformer"/>
+    </listeners>
+
+    <test name="Regression Tests">
+        <packages>
+            <package name="com.framework.selenium.tests"/>
+        </packages>
+    </test>
+</suite>

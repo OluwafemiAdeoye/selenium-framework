@@ -1,0 +1,217 @@
+#=============================================================================
+# Bitbucket Pipeline Configuration
+# Selenium Web Automation Framework
+#
+# Execution modes:
+#   - default / develop / PRs: local browser (Chrome headless in container)
+#   - main / feature/*: LambdaTest cloud execution
+#   - custom pipelines: LambdaTest or BrowserStack on-demand
+#
+# Required repository variables for cloud execution:
+#   LT_USERNAME, LT_ACCESS_KEY
+#   BROWSERSTACK_USERNAME, BROWSERSTACK_ACCESS_KEY
+#=============================================================================
+
+image: maven:3.9.9-eclipse-temurin-21
+
+definitions:
+  caches:
+    maven-local: ~/.m2/repository
+
+  steps:
+    # ---- Local browser execution (Chrome in container) ----
+    - step: &build-and-test
+        name: Build and Test
+        caches:
+          - maven-local
+        script:
+          - apt-get update && apt-get install -y wget gnupg2
+          - wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | apt-key add -
+          - echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list
+          - apt-get update && apt-get install -y google-chrome-stable
+          - echo "Building and running tests locally..."
+          - mvn clean test -Dbrowser=chrome -Dheadless=true -Denv=staging
+        after-script:
+          - pipe: atlassian/checkstyle-report:0.3.0
+        artifacts:
+          - target/surefire-reports/**
+          - target/allure-results/**
+          - target/allure-report/**
+          - target/extent-reports/**
+          - target/screenshots/**
+          - target/logs/**
+
+    # ---- Smoke tests (local browser, smoke group only) ----
+    - step: &smoke-tests
+        name: Smoke Tests
+        caches:
+          - maven-local
+        script:
+          - apt-get update && apt-get install -y wget gnupg2
+          - wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | apt-key add -
+          - echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list
+          - apt-get update && apt-get install -y google-chrome-stable
+          - echo "Running smoke tests locally..."
+          - mvn clean test -Psmoke -Dbrowser=chrome -Dheadless=true -Denv=staging
+        artifacts:
+          - target/surefire-reports/**
+          - target/allure-results/**
+          - target/allure-report/**
+          - target/extent-reports/**
+          - target/screenshots/**
+
+    # ---- Allure report generation (via Maven plugin — no CLI download needed) ----
+    - step: &generate-allure-report
+        name: Generate Allure Report
+        caches:
+          - maven-local
+        script:
+          - echo "Generating Allure HTML report from test results..."
+          - mvn allure:report -q
+        artifacts:
+          - target/allure-report/**
+
+pipelines:
+  # Default pipeline for branches without a specific rule
+  default:
+    - step: *build-and-test
+    - step: *generate-allure-report
+
+  branches:
+    # Main branch — runs on LambdaTest cloud with auto-incrementing build number
+    main:
+      - step:
+          name: Run on LambdaTest
+          caches:
+            - maven-local
+          script:
+            - echo "Checking LambdaTest credentials..."
+            - echo "LT_USERNAME is set:" ${LT_USERNAME:+YES} ${LT_USERNAME:-NO}
+            - echo "LT_ACCESS_KEY is set:" ${LT_ACCESS_KEY:+YES} ${LT_ACCESS_KEY:-NO}
+            - echo "BUILD_NUMBER:" $BITBUCKET_BUILD_NUMBER
+            - mvn clean test -Denv=lambdatest -DLT_USERNAME=$LT_USERNAME -DLT_ACCESS_KEY=$LT_ACCESS_KEY -DBUILD_NUMBER=$BITBUCKET_BUILD_NUMBER
+          artifacts:
+            - target/surefire-reports/**
+            - target/allure-results/**
+            - target/extent-reports/**
+            - target/screenshots/**
+            - target/logs/**
+      - step: *generate-allure-report
+      - step:
+          name: Deploy Reports
+          deployment: production
+          script:
+            - echo "Deploying test reports..."
+            # Add your deployment script here (e.g. upload allure-report/ to S3, Pages, etc.)
+
+    # Feature branches — runs on LambdaTest cloud
+    feature/*:
+      - step:
+          name: Run on LambdaTest
+          caches:
+            - maven-local
+          script:
+            - echo "Checking LambdaTest credentials..."
+            - echo "LT_USERNAME is set:" ${LT_USERNAME:+YES} ${LT_USERNAME:-NO}
+            - echo "LT_ACCESS_KEY is set:" ${LT_ACCESS_KEY:+YES} ${LT_ACCESS_KEY:-NO}
+            - echo "BUILD_NUMBER:" $BITBUCKET_BUILD_NUMBER
+            - mvn clean test -Denv=lambdatest -DLT_USERNAME=$LT_USERNAME -DLT_ACCESS_KEY=$LT_ACCESS_KEY -DBUILD_NUMBER=$BITBUCKET_BUILD_NUMBER
+          artifacts:
+            - target/surefire-reports/**
+            - target/allure-results/**
+            - target/extent-reports/**
+            - target/screenshots/**
+            - target/logs/**
+      - step: *generate-allure-report
+
+    # Develop branch — runs locally in container
+    develop:
+      - step: *build-and-test
+      - step: *generate-allure-report
+
+  # Pull requests — smoke tests only (local browser, fast feedback)
+  pull-requests:
+    '**':
+      - step: *smoke-tests
+      - step: *generate-allure-report
+
+  # Manual / on-demand pipelines
+  custom:
+    # Full regression suite (local browser)
+    full-regression:
+      - step:
+          name: Full Regression
+          caches:
+            - maven-local
+          script:
+            - apt-get update && apt-get install -y wget gnupg2
+            - wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | apt-key add -
+            - echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list
+            - apt-get update && apt-get install -y google-chrome-stable
+            - mvn clean test -Pregression -Dbrowser=chrome -Dheadless=true -Denv=staging
+          artifacts:
+            - target/surefire-reports/**
+            - target/allure-results/**
+            - target/extent-reports/**
+            - target/screenshots/**
+      - step: *generate-allure-report
+
+    # LambdaTest execution (manual trigger)
+    lambdatest-execution:
+      - step:
+          name: Run on LambdaTest
+          caches:
+            - maven-local
+          script:
+            - echo "Checking LambdaTest credentials..."
+            - echo "LT_USERNAME is set:" ${LT_USERNAME:+YES} ${LT_USERNAME:-NO}
+            - echo "LT_ACCESS_KEY is set:" ${LT_ACCESS_KEY:+YES} ${LT_ACCESS_KEY:-NO}
+            - echo "BUILD_NUMBER:" $BITBUCKET_BUILD_NUMBER
+            - mvn clean test -Denv=lambdatest -DLT_USERNAME=$LT_USERNAME -DLT_ACCESS_KEY=$LT_ACCESS_KEY -DBUILD_NUMBER=$BITBUCKET_BUILD_NUMBER
+          artifacts:
+            - target/surefire-reports/**
+            - target/allure-results/**
+            - target/extent-reports/**
+            - target/screenshots/**
+            - target/logs/**
+      - step: *generate-allure-report
+
+    # BrowserStack execution (manual trigger)
+    browserstack-execution:
+      - step:
+          name: Run on BrowserStack
+          caches:
+            - maven-local
+          script:
+            - echo "Checking BrowserStack credentials..."
+            - echo "BROWSERSTACK_USERNAME is set:" ${BROWSERSTACK_USERNAME:+YES} ${BROWSERSTACK_USERNAME:-NO}
+            - echo "BROWSERSTACK_ACCESS_KEY is set:" ${BROWSERSTACK_ACCESS_KEY:+YES} ${BROWSERSTACK_ACCESS_KEY:-NO}
+            - echo "BUILD_NUMBER:" $BITBUCKET_BUILD_NUMBER
+            - mvn clean test -Denv=browserstack -DBROWSERSTACK_USERNAME=$BROWSERSTACK_USERNAME -DBROWSERSTACK_ACCESS_KEY=$BROWSERSTACK_ACCESS_KEY -DBUILD_NUMBER=$BITBUCKET_BUILD_NUMBER
+          artifacts:
+            - target/surefire-reports/**
+            - target/allure-results/**
+            - target/extent-reports/**
+            - target/screenshots/**
+            - target/logs/**
+      - step: *generate-allure-report
+
+    # SauceLabs execution (manual trigger)
+    saucelabs-execution:
+      - step:
+          name: Run on SauceLabs
+          caches:
+            - maven-local
+          script:
+            - echo "Checking SauceLabs credentials..."
+            - echo "SAUCELABS_USERNAME is set:" ${SAUCELABS_USERNAME:+YES} ${SAUCELABS_USERNAME:-NO}
+            - echo "SAUCELABS_ACCESS_KEY is set:" ${SAUCELABS_ACCESS_KEY:+YES} ${SAUCELABS_ACCESS_KEY:-NO}
+            - echo "BUILD_NUMBER:" $BITBUCKET_BUILD_NUMBER
+            - mvn clean test -Denv=saucelabs -DSAUCELABS_USERNAME=$SAUCELABS_USERNAME -DSAUCELABS_ACCESS_KEY=$SAUCELABS_ACCESS_KEY -DBUILD_NUMBER=$BITBUCKET_BUILD_NUMBER
+          artifacts:
+            - target/surefire-reports/**
+            - target/allure-results/**
+            - target/extent-reports/**
+            - target/screenshots/**
+            - target/logs/**
+      - step: *generate-allure-report

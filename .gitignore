@@ -1,0 +1,54 @@
+# Compiled output
+target/
+
+# IDE files
+.idea/
+*.iml
+*.iws
+*.ipr
+.project
+.classpath
+.settings/
+.vscode/
+*.swp
+*.swo
+*~
+.nb-gradle/
+
+# Claude Code
+.claude/
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+ehthumbs.db
+
+# Maven
+*.jar
+*.war
+*.ear
+dependency-reduced-pom.xml
+
+# Logs
+*.log
+logs/
+
+# Test output
+test-output/
+allure-results/
+allure-report/
+surefire-reports/
+
+# Environment / secrets (never commit credentials)
+.env
+*.env.*
+
+# Screenshots and videos (generated at runtime, stored under target/)
+screenshots/
+videos/
+*.sh
+
+# Local-only test credentials (never commit)
+*.local.json
+login-data.local.json
