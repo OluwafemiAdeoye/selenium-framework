@@ -22,14 +22,26 @@ import java.util.List;
  *
  * <p>All values can be overridden via {@code -D} flags:
  * {@code mvn clean test -Dparallel.execution=true -Dparallel.mode=methods -Dthread.count=4}
+ *
+ * <p>Local Safari is forced sequential regardless of these settings — see
+ * {@link #isLocalSafari()}.
  */
 public class ParallelConfigListener implements IAlterSuiteListener {
 
     private static final Logger log = LogManager.getLogger(ParallelConfigListener.class);
+    private static final String SAFARI = "safari";
+    private static final String LOCAL = "local";
 
     @Override
     public void alter(List<XmlSuite> suites) {
         boolean parallelEnabled = ConfigManager.getBoolean("parallel.execution", false);
+
+        if (parallelEnabled && isLocalSafari()) {
+            log.warn("Safari cannot run tests in parallel — safaridriver permits only one "
+                    + "automation session per host. Forcing sequential execution; "
+                    + "parallel.execution=true and thread.count are ignored for this run.");
+            parallelEnabled = false;
+        }
 
         for (XmlSuite suite : suites) {
             if (parallelEnabled) {
@@ -52,5 +64,17 @@ public class ParallelConfigListener implements IAlterSuiteListener {
                 log.info("Parallel execution DISABLED (sequential) — suite: {}", suite.getName());
             }
         }
+    }
+
+    /**
+     * True when the run targets Safari on this machine.
+     *
+     * <p>The single-session restriction belongs to the local {@code safaridriver} process, not to
+     * Safari itself — a cloud grid hands out one VM per session, so remote Safari parallelises
+     * normally and must not be throttled here.
+     */
+    private static boolean isLocalSafari() {
+        return SAFARI.equalsIgnoreCase(ConfigManager.get("browser", "chrome").trim())
+                && LOCAL.equalsIgnoreCase(ConfigManager.get("execution.mode", "local").trim());
     }
 }

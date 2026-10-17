@@ -169,7 +169,7 @@ public final class DriverFactory {
             case CHROME -> createChromeDriver(headless);
             case FIREFOX -> createFirefoxDriver(headless);
             case EDGE -> createEdgeDriver(headless);
-            case SAFARI -> createSafariDriver();
+            case SAFARI -> createSafariDriver(headless);
         };
     }
 
@@ -225,7 +225,11 @@ public final class DriverFactory {
         return new EdgeDriver(options);
     }
 
-    private static WebDriver createSafariDriver() {
+    private static WebDriver createSafariDriver(boolean headless) {
+        if (headless) {
+            log.warn("Safari has no headless mode — ignoring headless=true and launching a "
+                    + "visible window. Use chrome or firefox for headless runs.");
+        }
         return new SafariDriver(new SafariOptions());
     }
 
