@@ -7,7 +7,7 @@ import org.openqa.selenium.By;
 public class LoginPage extends BasePage {
 
     private final By usernameField = By.id("username");
-    private final By passwordField = By.id("passwordsss");
+    private final By passwordField = By.id("password");
     private final By loginButton = By.cssSelector("button[type='submit']");
     private final By errorMessage = By.id("flash");
 
